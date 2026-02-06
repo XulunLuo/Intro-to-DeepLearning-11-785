@@ -8,3 +8,5 @@ __pycache__/
 wandb/ 
 *.zip 
 data/ 
+.DS_Store 
+._* 
