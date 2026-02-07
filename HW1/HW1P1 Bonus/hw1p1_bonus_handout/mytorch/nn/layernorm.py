@@ -42,7 +42,7 @@ class LayerNorm1d:
         self.dLdbeta = np.sum(dLdBZ, axis=0, keepdims=True) # TODO
 
         # Gradient w.r.t. normalized input
-        dLdNZ = np.sum(dLdNZ, axis=1, keepdims=True) # TODO
+        dLdNZ = dLdBZ * self.gamma # TODO
 
         # Gradient w.r.t. input Z
         C = self.num_features

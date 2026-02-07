@@ -13,16 +13,17 @@ class Dropout(object):
     def forward(self, x, train=True):
 
         if train:
-            # TODO: Generate mask and apply to x
+            # Generate binary mask
+            self.mask = np.random.binomial(1, 1 - self.p, x.shape)
 
-            raise NotImplementedError("Dropout Forward (Train) Not Implemented")
+            # Mask to input and scale
+            return x * self.mask / (1 - self.p)
             
         else:
-            # TODO: Return x as is
-
-            raise NotImplementedError("Dropout Forward (Inference) Not Implemented")
+            # No dropout, return inout unchaged
+            return x
 		
     def backward(self, delta):
         # TODO: Multiply mask with delta and return
 
-        raise NotImplementedError("Dropout Backward Not Implemented")
+        return delta * self.mask       
