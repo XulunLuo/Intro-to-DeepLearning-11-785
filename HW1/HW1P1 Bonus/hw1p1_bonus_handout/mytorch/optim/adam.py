@@ -42,8 +42,6 @@ class Adam():
             # Update weights 
             layer.W = layer.W - self.lr * m_W_hat / (np.sqrt(v_W_hat) + self.eps)
 
-
-
             """Bias Updates"""
             # Get current gradients for bias
             g_b = layer.dLdb

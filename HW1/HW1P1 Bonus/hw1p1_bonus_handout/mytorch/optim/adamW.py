@@ -24,10 +24,40 @@ class AdamW():
         self.t += 1
         for layer_id, layer in enumerate(self.l):
 
-            # TODO: Calculate updates for weight
-            
-            # TODO: calculate updates for bias
+            """Weight Updates"""
+            # Get current gradients
+            g_W = layer.dLdW
 
-            # TODO: Perform weight and bias updates with weight decay
+            # Update biased first moment estimate
+            self.m_W[layer_id] =  self.beta1 * self.m_W[layer_id] + (1 - self.beta1) * g_W
 
-            raise NotImplementedError("AdamW Not Implemented")
+            # Update biased second moment estimate
+            self.v_W[layer_id] = self.beta2 * self.v_W[layer_id] + (1 - self.beta2) * (g_W ** 2)
+
+            # Compute bias-corrected first moment estimate
+            m_W_hat = self.m_W[layer_id] / (1 - self.beta1 ** self.t)
+
+            # Compute bias-corrected second moment estimate
+            v_W_hat = self.v_W[layer_id] / (1 - self.beta2 ** self.t)
+
+            # Apply Adam update
+            layer.W = layer.W * (1 - self.lr * self.weight_decay) - self.lr * m_W_hat / (np.sqrt(v_W_hat) + self.eps)
+
+            """Bias Updates"""
+            # Get current gradients for bias
+            g_b = layer.dLdb
+
+            # Update biased first moment estimate 
+            self.m_b[layer_id] = self.beta1 * self.m_b[layer_id] + (1 - self.beta1) * g_b
+
+            # Update biased second moment estimate 
+            self.v_b[layer_id] = self.beta2 * self.v_b[layer_id] + (1 - self.beta2) * (g_b ** 2)
+
+            # Compute bias-correted first moement estimate
+            m_b_hat = self.m_b[layer_id] / (1 - self.beta1 ** self.t)
+
+            # Compute bias-correted second moement estimate
+            v_b_hat = self.v_b[layer_id] / (1 - self.beta2 ** self.t)
+
+            # Update biases
+            layer.b = layer.b * (1 - self.lr * self.weight_decay) - self.lr * m_b_hat / (np.sqrt(v_b_hat) + self.eps)
