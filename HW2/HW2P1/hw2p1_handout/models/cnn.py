@@ -62,9 +62,9 @@ class CNN(object):
         # self.linear_layer         (Linear)      = Linear(???)
         # <---------------------
 
-        self.convolutional_layers = None
-        self.flatten = None
-        self.linear_layer = None
+        self.convolutional_layers = []
+        self.flatten = num_input_channels
+        self.linear_layer = input_width
 
     def forward(self, A):
         """
