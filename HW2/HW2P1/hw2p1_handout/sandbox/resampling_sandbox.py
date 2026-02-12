@@ -33,14 +33,14 @@ upsampling_factor = 2
 upsample_1d = Upsample1d(upsampling_factor)
 
 # TODO: Uncomment the following lines and change the file to test downsampling
-#downsampling_factor = 2
-#downsample_1d = Downsample1d(downsampling_factor)
+downsampling_factor = 2
+downsample_1d = Downsample1d(downsampling_factor)
 ########################################################################
 
 # TODO: Uncomment the following lines and change the file to 2D versions
-# x = np.random.randn(batch, in_c, input_width, input_width)
-# upsample_2d = Upsample2d(upsampling_factor)
-# downsample_2d = Downsample2d(downsampling_factor)
+x = np.random.randn(batch, in_c, input_width, input_width)
+upsample_2d = Upsample2d(upsampling_factor)
+downsample_2d = Downsample2d(downsampling_factor)
 ########################################################################
 
 #TODO: Uncomment and/or add print statements as you need them.
@@ -48,10 +48,10 @@ upsample_1d = Upsample1d(upsampling_factor)
 # Perform forward and backward pass
 forward_res = upsample_1d.forward(x)
 
-# print("Forward shape: ", forward_res.shape)
-# print("Forward result: ", forward_res)
+print("Forward shape: ", forward_res.shape)
+print("Forward result: ", forward_res)
 
 backward_res = upsample_1d.backward(forward_res)
 
-# print("Backward shape: ", backward_res.shape)
-# print("Backward result: ", backward_res)
+print("Backward shape: ", backward_res.shape)
+print("Backward result: ", backward_res)
