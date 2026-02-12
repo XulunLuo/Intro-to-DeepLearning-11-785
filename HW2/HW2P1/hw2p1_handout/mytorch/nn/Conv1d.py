@@ -34,10 +34,24 @@ class Conv1d_stride1():
             Z (np.array): (batch_size, out_channels, output_size)
         """
         self.A = A
+        batch_size, in_channels, input_width = A.shape
+        output_width = input_width - self.kernel_size + 1
 
-        Z = None  # TODO
+        Z = np.zeros((batch_size, self.out_channels, output_width))
 
-        return NotImplemented
+        # Slide kernel across input
+        for i in range(output_width):
+            # Extract the input window
+            window = A[:, :, i:i+self.kernel_size]
+
+            for out in range(self.out_channels):
+                # Multiply and sum 
+                Z[:, out, i] = np.sum(window * self.W[out], axis=(1, 2))
+
+            # Add bias
+            Z[:, :, i] += self.b
+
+        return Z
 
     def backward(self, dLdZ):
         """
@@ -46,11 +60,40 @@ class Conv1d_stride1():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_size)
         """
-        self.dLdW = None  # TODO
-        self.dLdb = None  # TODO
-        dLdA = None  # TODO
+        batch_size, out_channels, output_width = dLdZ.shape
+        _, in_channels, input_width = self.A.shape
 
-        return NotImplemented
+        # Initialize gradients
+        self.dLdW = np.zeros(self.W.shape)
+        self.dLdb = np.zeros(self.b.shape)  # TODO
+        dLdA = np.zeros(self.A.shape)  # TODO
+
+        # Compute dLdb
+        self.dLdb = np.sum(dLdZ, axis=(0,2))
+
+        # Compute dLdW and dLdA
+        for i in range(output_width):
+            # Extract the input window
+            window = self.A[:, :, i:i+self.kernel_size] 
+
+            # Gradient
+            gradient = dLdZ[:, :, i]
+
+            # Compute dLdW
+            for out in range(out_channels):
+                grad_boardcast = gradient[:, out].reshape(batch_size, 1, 1)
+                
+                # Multiply and sum 
+                self.dLdW[out] += np.sum(grad_boardcast * window, axis=0)
+
+            # Compute dLdA
+            for out in range(out_channels):
+                grad_boardcast = gradient[:, out].reshape(batch_size, 1, 1)
+
+                # Multiply and accumulate
+                dLdA[:, :, i:i+self.kernel_size] += grad_boardcast * self.W[out]
+
+        return dLdA
 
 
 class Conv1d():
@@ -60,8 +103,8 @@ class Conv1d():
         self.pad = padding
         
         # Initialize Conv1d() and Downsample1d() isntance
-        self.conv1d_stride1 = None  # TODO
-        self.downsample1d = None  # TODO
+        self.conv1d_stride1 = Conv1d_stride1(in_channels, out_channels, kernel_size, weight_init_fn, bias_init_fn)  # TODO
+        self.downsample1d = Downsample1d(stride)  # TODO
 
     def forward(self, A):
         """
@@ -71,15 +114,22 @@ class Conv1d():
             Z (np.array): (batch_size, out_channels, output_size)
         """
         # Pad the input appropriately using np.pad() function
-        # TODO
+        if self.pad > 0:
+            A_padded = np.pad(A, pad_width=((0, 0), (0, 0), (self.pad, self.pad)),
+                         mode='constant', 
+                         constant_values=0)
 
         # Call Conv1d_stride1
-        # TODO
+        else:
+            A_padded = A
+
+        # Apply stride-1 convolution
+        Z_stride1 = self.conv1d_stride1.forward(A_padded)
 
         # downsample
-        Z = None  # TODO
+        Z = self.downsample1d.forward(Z_stride1)  # TODO
 
-        return NotImplemented
+        return Z
 
     def backward(self, dLdZ):
         """
@@ -88,13 +138,18 @@ class Conv1d():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_size)
         """
-        # Call downsample1d backward
-        # TODO
+        # CCall Conv1d_stride1 backward
+        dLdZ_stride1 = self.downsample1d.backward(dLdZ)
 
-        # Call Conv1d_stride1 backward
-        dLdA = None  # TODO
+        # Backprop 
+        dLdA_padded = self.conv1d_stride1.backward(dLdZ_stride1)
 
-        # Unpad the gradient
-        # TODO
+        # Remove padding from gradient
+        if self.pad > 0:
+            # Keeps only the middle, removing pad from both sides
+            dLdA = dLdA_padded[:, :, self.pad:-self.pad]
+        else:
+            # Unpad the gradient
+            dLdA = dLdA_padded
 
-        return NotImplemented
+        return dLdA

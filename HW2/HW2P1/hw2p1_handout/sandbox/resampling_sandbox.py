@@ -23,7 +23,7 @@ np.random.seed(11485) # Set the seed so that the random values are the same each
 in_c, out_c = 2, 2
 batch, input_width = 1, 4
 kernel = 2
-x = np.random.randn(batch, in_c, input_width)
+# x = np.random.randn(batch, in_c, input_width)
 
 print("input shape: ", x.shape)
 print("input: ", x)
@@ -33,8 +33,8 @@ upsampling_factor = 2
 upsample_1d = Upsample1d(upsampling_factor)
 
 # TODO: Uncomment the following lines and change the file to test downsampling
-downsampling_factor = 2
-downsample_1d = Downsample1d(downsampling_factor)
+# downsampling_factor = 2
+# downsample_1d = Downsample1d(downsampling_factor)
 ########################################################################
 
 # TODO: Uncomment the following lines and change the file to 2D versions
