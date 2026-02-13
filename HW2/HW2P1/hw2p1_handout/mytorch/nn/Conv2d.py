@@ -45,17 +45,18 @@ class Conv2d_stride1():
 
         # Slide over height and width
         for h in range(output_height):
-            for w in range(output_width) 
+            for w in range(output_width): 
                 window = A[:, :, h:h+self.kernel_size, w:w+self.kernel_size]
         
                 # For each output channel
                 for output in range(self.out_channels):
                     # Multiply and sum over in_channels, kernal_h, and kernel_w
-                    Z[:, output, h, w] = np.sum(window * self.[output], axis=(1, 2, 3))
+                    Z[:, output, h, w] = np.sum(window * self.W[output], axis=(1, 2, 3))
 
                 Z[:, :, h, w] += self.b
 
         return Z
+
 
     def backward(self, dLdZ):
         """
@@ -64,11 +65,37 @@ class Conv2d_stride1():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_height, input_width)
         """
-        self.dLdW = None  # TODO
-        self.dLdb = None  # TODO
-        dLdA = None  # TODO
+        batch_size, out_channels, output_height, output_width = dLdZ.shape
+        _, in_channels, input_height, input_width = self.A.shape
 
-        return NotImplemented
+        # Intialize gradients
+        self.dLdW = np.zeros(self.W.shape) # TODO
+        self.dLdb = np.zeros(self.b.shape) # TODO
+        dLdA = np.zeros(self.A.shape)
+
+        # Compute dLdb
+        self.dLdb = np.sum(dLdZ, axis=(0, 2, 3))
+
+        # Compute dLdW and dLdA
+        for h in range(output_height):
+            for w in range(output_width):
+                window = self.A[:, :, h:h+self.kernel_size, w:w+self.kernel_size]
+
+                # Gradient
+                gradient = dLdZ[:, :, h, w]
+
+                # Compute dLdW
+                for output in range(out_channels):
+                    grad_boardcast = gradient[:, output].reshape(batch_size, 1, 1, 1)
+                    self.dLdW[output] += np.sum(grad_boardcast * window, axis=0)
+
+                # Compute dLdA
+                for output in range(out_channels):
+                    grad_boardcast = gradient[:, output].reshape(batch_size, 1, 1, 1)
+                    temp_grad = grad_boardcast * self.W[output]
+                    dLdA[:, :, h:h+self.kernel_size, w:w+self.kernel_size] += temp_grad # TODO
+
+        return dLdA
 
 
 class Conv2d():
@@ -89,15 +116,18 @@ class Conv2d():
             Z (np.array): (batch_size, out_channels, output_height, output_width)
         """
         # Pad the input appropriately using np.pad() function
-        # TODO
+        if self.pad > 0:
+            A_padded = np.pad(A, pad_width=((0, 0), (0, 0), (self.pad, self.pad), (self.pad, self.pad)), mode='constant', constant_values=0)
+        else:
+            A_padded = A
 
         # Call Conv2d_stride1
-        # TODO
+        Z_stride1 = self.conv2d_stride1.forward(A_padded)
 
         # downsample
-        Z = None  # TODO
+        Z = self.downsample2d.forward(Z_stride1)  # TODO
 
-        return NotImplemented
+        return Z
 
     def backward(self, dLdZ):
         """
@@ -107,12 +137,13 @@ class Conv2d():
             dLdA (np.array): (batch_size, in_channels, input_height, input_width)
         """
         # Call downsample1d backward
-        # TODO
-
-        # Call Conv1d_stride1 backward
-        dLdA = None  # TODO
+        dLdZ_stride1 = self.downsample2d.backward(dLdZ)
+        dLdA_padded = self.conv2d_stride1.backward(dLdZ_stride1)
 
         # Unpad the gradient
-        # TODO
+        if self.pad > 0:
+            dLdA = dLdA_padded[:, :, self.pad:-self.pad, self.pad:-self.pad]  # TODO
+        else:
+            dLdA = dLdA_padded
 
-        return NotImplemented
+        return dLdA
