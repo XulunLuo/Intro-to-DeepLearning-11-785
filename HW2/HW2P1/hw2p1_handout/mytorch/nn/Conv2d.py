@@ -35,10 +35,27 @@ class Conv2d_stride1():
             Z (np.array): (batch_size, out_channels, output_height, output_width)
         """
         self.A = A
+        batch_size, in_channels, input_height, input_width = A.shape
 
-        Z = None  # TODO
+        # Calculate output dimensions
+        output_height = input_height - self.kernel_size + 1
+        output_width = input_width - self.kernel_size + 1
 
-        return NotImplemented
+        Z = np.zeros((batch_size, self.out_channels, output_height, output_width))
+
+        # Slide over height and width
+        for h in range(output_height):
+            for w in range(output_width) 
+                window = A[:, :, h:h+self.kernel_size, w:w+self.kernel_size]
+        
+                # For each output channel
+                for output in range(self.out_channels):
+                    # Multiply and sum over in_channels, kernal_h, and kernel_w
+                    Z[:, output, h, w] = np.sum(window * self.[output], axis=(1, 2, 3))
+
+                Z[:, :, h, w] += self.b
+
+        return Z
 
     def backward(self, dLdZ):
         """
