@@ -83,7 +83,25 @@ class MeanPool2d_stride1():
         Return:
             Z (np.array): (batch_size, out_channels, output_width, output_height)
         """
-        raise NotImplementedError
+        batch_size, input_cahnnels, input_width, input_height = A.shape
+        kernel = self.kernel
+
+        output_width = input_width - kernel + 1
+        output_height = input_height - kernel + 1
+
+        self.input_shape = A.shape
+
+        Z = np.zeros((batch_size, input_cahnnels, output_width, output_height))
+
+        # Mean pooling
+        for a in range(batch_size):
+            for b in range(input_cahnnels):
+                for c in range(output_width):
+                    for d in range(output_height):
+                        window = A[a, b, c:c+kernel, d:d+kernel]
+                        Z[a, b, c, d]  = np.mean(window)
+
+        return Z
 
     def backward(self, dLdZ):
         """
@@ -92,8 +110,22 @@ class MeanPool2d_stride1():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_width, input_height)
         """
+        batch_size, input_channels, input_width, input_height = self.input_shape
+        kernel = self.kernel
+        output_width, output_height = dLdZ.shape[2], dLdZ.shape[3]
 
-        raise NotImplementedError
+        # Initialize gradient
+        dLdA = np.zeros(self.input_shape)
+
+        # Gradient distribution
+        for a in range(batch_size):
+            for b in range(input_channels):
+                for c in range(input_width):
+                    for d in range(input_height):
+                        gradients = dLdZ[a, b, c, d] / (kernel * kernel)
+                        dLdA[a, b, c:c+kernel, d:d+kernel] += gradients
+
+        return dLdA
 
 
 class MaxPool2d():
@@ -102,8 +134,8 @@ class MaxPool2d():
         self.stride = stride
 
         # Create an instance of MaxPool2d_stride1
-        self.maxpool2d_stride1 = None  # TODO
-        self.downsample2d = None  # TODO
+        self.maxpool2d_stride1 = MaxPool2d_stride1(kernel)  # TODO
+        self.downsample2d = Downsample2d(stride)  # TODO
 
     def forward(self, A):
         """
@@ -112,8 +144,13 @@ class MaxPool2d():
         Return:
             Z (np.array): (batch_size, out_channels, output_width, output_height)
         """
+        # Apply stride-1 max pooling
+        Z_stride1 = self.maxpool2d_stride1.forward(A)
 
-        raise NotImplementedError
+        # Downsample
+        Z = self.downsample2d.forward(Z_stride1)
+
+        return Z
 
     def backward(self, dLdZ):
         """
@@ -122,7 +159,13 @@ class MaxPool2d():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_width, input_height)
         """
-        raise NotImplementedError
+        # Backprop through downsample
+        dLdZ_stride1 = self.downsample2d.backward(dLdZ)
+
+        # Backprop through stride-1 max pool
+        dLdA = self.maxpool2d_stride1.backward(dLdZ_stride1)
+
+        raise dLdA
 
 
 class MeanPool2d():
@@ -132,8 +175,8 @@ class MeanPool2d():
         self.stride = stride
 
         # Create an instance of MaxPool2d_stride1
-        self.meanpool2d_stride1 = None  # TODO
-        self.downsample2d = None  # TODO
+        self.meanpool2d_stride1 = MeanPool2d_stride1(kernel)  # TODO
+        self.downsample2d = Downsample2d(stride)  # TODO
 
     def forward(self, A):
         """
@@ -142,7 +185,13 @@ class MeanPool2d():
         Return:
             Z (np.array): (batch_size, out_channels, output_width, output_height)
         """
-        raise NotImplementedError
+         # Apply stride-1 mean pooling
+        Z_stride1 = self.meanpool2d_stride1.forward(A)
+
+        # Downsample
+        Z = self.downsample2d.forward(Z_stride1)
+
+        return Z
 
     def backward(self, dLdZ):
         """
@@ -151,4 +200,10 @@ class MeanPool2d():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_width, input_height)
         """
-        raise NotImplementedError
+        # Backprop through downsample
+        dLdZ_stride1 = self.downsample2d.backward(dLdZ)
+        
+        # Backprop through stride-1 mean pool
+        dLdA = self.meanpool2d_stride1.backward(dLdZ_stride1)
+        
+        return dLdA
