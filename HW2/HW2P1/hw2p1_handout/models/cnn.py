@@ -63,8 +63,21 @@ class CNN(object):
         # <---------------------
 
         self.convolutional_layers = []
-        self.flatten = num_input_channels
-        self.linear_layer = input_width
+        current_channels = num_input_channels
+        current_width = input_width
+
+        for i in range(self.nlayers):
+            self.convolutional_layers.append(Conv1d(current_channels, num_channels[i], kernel_sizes[i], strides[i], padding = 0, weight_init_fn=conv_weight_init_fn, bias_init_fn=bias_init_fn))
+            current_channels = num_channels[i]
+            current_width = (current_width - kernel_sizes[i]) // strides[i] + 1
+        
+        # Flatten layer
+        self.flatten = Flatten()
+
+        # Linear layer
+        self.linear_layer = Linear(current_channels * current_width, num_linear_neurons)
+        self.linear_layer.W = linear_weight_init_fn(num_linear_neurons, current_channels * current_width)
+        self.linear_layer.b = bias_init_fn(num_linear_neurons).reshape(-1, 1)
 
     def forward(self, A):
         """
@@ -76,9 +89,16 @@ class CNN(object):
         # Your code goes here -->
         # Iterate through each layer
         # <---------------------
+        Z = A 
+        for i in range(self.nlayers):
+            Z = self.convolutional_layers[i].forward(Z)
+            Z = self.activations[i].forward(Z)
+
+        Z = self.flatten.forward(Z)
+        Z = self.linear_layer.forward(Z)
 
         # Save output (necessary for error and loss)
-        self.Z = A
+        self.Z = Z
 
         return self.Z
 
@@ -90,8 +110,24 @@ class CNN(object):
             grad (np.array): (batch size, num_input_channels, input_width)
         """
         m, _ = labels.shape
+
+        # Compute loss and get init gradient
         self.loss = self.criterion.forward(self.Z, labels).sum()
         grad = self.criterion.backward()
+
+        # Backprop through the linear layer
+        grad = self.linear_layer.backward(grad)
+
+        # Backprop through flatten
+        grad = self.flatten.backward(grad)
+
+        # Backprop through Conv&&Activation pair 
+        for i in reversed(range(self.nlayers)):
+            # Activation
+            grad = self.activations[i].backward(grad)
+
+            # Conv backward
+            grad = self.convolutional_layers[i].backward(grad)
 
         # Your code goes here -->
         # Iterate through each layer in reverse order
