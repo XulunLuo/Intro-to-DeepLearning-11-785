@@ -21,10 +21,10 @@ class CNN_SimpleScanningMLP():
         # self.conv3 = ???
         # ...
         # <---------------------
-        self.conv1 = None
-        self.conv2 = None
-        self.conv3 = None
-        self.layers = [] # TODO: Add the layers in the correct order
+        self.conv1 = Conv1d(in_channels=24, out_channels=8, kernel_size=8, stride=1)
+        self.conv2 = Conv1d(in_channels=8,  out_channels=16, kernel_size=1, stride=1)
+        self.conv3 = Conv1d(in_channels=16,  out_channels=4, kernel_size=1, stride=1)
+        self.layers = [self.conv1, ReLU(), self.conv2, ReLU(), self.conv3] # TODO: Add the layers in the correct order
 
     def init_weights(self, weights):
         """
@@ -43,9 +43,23 @@ class CNN_SimpleScanningMLP():
         #   2 : Reshape the weight into (out_channels, kernel_size, in_channels)
         #   3 : Transpose weight back into (out_channels, in_channels, kernel_size)
 
-        self.conv1.conv1d_stride1.W = None
-        self.conv2.conv1d_stride1.W = None
-        self.conv3.conv1d_stride1.W = None
+        # conv1
+        w1 = w1.T # Transpose
+        w1 = w1.reshape(8, 8, 24) # Reshape
+        w1 = w1.transpose(0, 2, 1) # Transpose weight back
+        self.conv1.conv1d_stride1.W = w1
+
+        # conv2
+        w2 = w2.T
+        w2 = w2.reshape(16, 1, 8)
+        w2 = w2.transpose(0, 2, 1)
+        self.conv2.conv1d_stride1.W = w2
+
+        # conv2
+        w3 = w3.T
+        w3 = w3.reshape(4, 1, 16)
+        w3 = w3.transpose(0, 2, 1)
+        self.conv3.conv1d_stride1.W = w3
 
     def forward(self, A):
         """
@@ -83,10 +97,10 @@ class CNN_DistributedScanningMLP():
         # self.conv3 = ???
         # ...
         # <---------------------
-        self.conv1 = None
-        self.conv2 = None
-        self.conv3 = None
-        self.layers = [] # TODO: Add the layers in the correct order
+        self.conv1 = Conv1d(in_channels=24, out_channels=8, kernel_size=1, stride=1) # Each neuron only looks at 1 timestep not 8
+        self.conv2 = Conv1d(in_channels=8,  out_channels=16, kernel_size=1, stride=1)
+        self.conv3 = Conv1d(in_channels=16,  out_channels=4, kernel_size=1, stride=1)
+        self.layers = [self.conv1, ReLU(), self.conv2, ReLU(), self.conv3] # TODO: Add the layers in the correct order
 
     def __call__(self, A):
         # Do not modify this method
@@ -110,10 +124,25 @@ class CNN_DistributedScanningMLP():
         #   3 : Transpose weight back into (out_channels, in_channels, kernel_size)
         #   4 : Slice the weight matrix and reduce to only the shared weights
         #   (hint: be careful, steps 1-3 are similar, but not exactly like in the simple scanning MLP)
-        
-        self.conv1.conv1d_stride1.W = None
-        self.conv2.conv1d_stride1.W = None
-        self.conv3.conv1d_stride1.W = None
+        # conv1
+        w1 = w1.T # Transpose
+        w1 = w1.reshape(8, 8, 24) # Reshape
+        w1 = w1.transpose(0, 2, 1) # Transpose weight back
+        w1 = w1[:, :, 0:1] # keep only the first kernel
+        self.conv1.conv1d_stride1.W = w1
+
+        # conv2
+        w2 = w2.T
+        w2 = w2.reshape(16, 1, 8)
+        w2 = w2.transpose(0, 2, 1)
+        self.conv2.conv1d_stride1.W = w2
+
+        # conv2
+        w3 = w3.T
+        w3 = w3.reshape(4, 1, 16)
+        w3 = w3.transpose(0, 2, 1)
+        self.conv3.conv1d_stride1.W = w3
+
 
     def forward(self, A):
         """
