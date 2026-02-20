@@ -126,17 +126,17 @@ class CNN_DistributedScanningMLP():
         #   (hint: be careful, steps 1-3 are similar, but not exactly like in the simple scanning MLP)
 
         # conv1
-        W1 = np.zeros((8, 24, 8))  
+        W1 = np.zeros((8, 24, 8))  # out_ch, in_ch, kernel
         for out_neuron in range(8):
             for kernel_pos in range(8):
-                row = kernel_pos * 24
-                block = w1[row : row + 24, out_neuron]  
+                row = kernel_pos * 24  # w1 lays out kernel positions as blocks of 24 rows
+                block = w1[row : row + 24, out_neuron]
                 if not np.isnan(block).any():
                     W1[out_neuron, :, kernel_pos] = block
         self.conv1.conv1d_stride1.W = W1
 
-        # conv2
-        W2 = np.zeros((16, 8, 1))  
+        # conv2 - kernel size is 1 so last dim always 0
+        W2 = np.zeros((16, 8, 1))
         for out_neuron in range(16):
             for in_neuron in range(8):
                 val = w2[in_neuron, out_neuron]
@@ -144,8 +144,8 @@ class CNN_DistributedScanningMLP():
                     W2[out_neuron, in_neuron, 0] = val
         self.conv2.conv1d_stride1.W = W2
 
-        # conv3
-        W3 = w3.T.reshape(4, 1, 16).transpose(0, 2, 1)  
+        # conv3 - w3 is (in, out) so need to transpose and add kernel dim
+        W3 = w3.T.reshape(4, 1, 16).transpose(0, 2, 1)
         self.conv3.conv1d_stride1.W = W3
 
 
