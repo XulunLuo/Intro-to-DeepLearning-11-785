@@ -76,7 +76,8 @@ class CNN(object):
 
         # Linear layer
         self.linear_layer = Linear(current_channels * current_width, num_linear_neurons)
-        self.linear_layer.W = linear_weight_init_fn(num_linear_neurons, current_channels * current_width)
+        if linear_weight_init_fn is not None:
+            self.linear_layer.W = linear_weight_init_fn(num_linear_neurons, current_channels * current_width)
         self.linear_layer.b = bias_init_fn(num_linear_neurons)
 
     def forward(self, A):
@@ -99,6 +100,7 @@ class CNN(object):
 
         # Save output (necessary for error and loss)
         self.Z = Z
+        print(f"y2 shape: {self.Z.shape}, W: {self.linear_layer.W.shape}, b: {self.linear_layer.b.shape}")
 
         return self.Z
 

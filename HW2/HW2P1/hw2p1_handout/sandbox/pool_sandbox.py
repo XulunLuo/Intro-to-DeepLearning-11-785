@@ -37,9 +37,9 @@ pool_layer = MeanPool2d_stride1(kernel)
 # pool_layer = MaxPool2d_stride1(kernel)
 
 # TODO: Uncomment these lines and change file to test MaxPool2d or MeanPool2d
-# stride = 3
-# pool_layer = MeanPool2d(kernel, stride)
-# pool_layer = MaxPool2d(kernel, stride)
+stride = 3
+pool_layer = MeanPool2d(kernel, stride)
+pool_layer = MaxPool2d(kernel, stride)
 
 #TODO: Uncomment and/or add print statements as you need them.
 

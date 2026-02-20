@@ -49,13 +49,13 @@ conv_transpose_1d = ConvTranspose1d(
 #TODO: Uncomment and/or add print statements as you need them.
 
 y = conv_transpose_1d.forward(x)
-# print("output shape: ", y.shape)
-# print("output: ", y)
+print("output shape: ", y.shape)
+print("output: ", y)
 
 delta = np.ones(y.shape)
-# print("delta shape: ", delta.shape)
-# print("delta: ", delta)
+print("delta shape: ", delta.shape)
+print("delta: ", delta)
 
 conv_backward_res = conv_transpose_1d.backward(delta)
-# print("dx shape: ", conv_backward_res.shape)
-# print("dx: ", conv_backward_res)
+print("dx shape: ", conv_backward_res.shape)
+print("dx: ", conv_backward_res)

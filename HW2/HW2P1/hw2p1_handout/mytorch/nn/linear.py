@@ -21,7 +21,7 @@ class Linear:
         self.A = A  # TODO
         self.N = A.shape[0]  # TODO - store the batch size parameter of the input A
 
-        Z = A @ self.W.T + self.b  # TODO
+        Z = A @ self.W.T + self.b.flatten()  # TODO
         return Z  # TODO - What should be the return value?
 
     def backward(self, dLdZ):

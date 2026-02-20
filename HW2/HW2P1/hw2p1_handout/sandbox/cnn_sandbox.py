@@ -64,12 +64,12 @@ x = np.random.randn(batch_size, num_input_channels, input_width)
 
 y = model.forward(x)
 
-# print("Forward shape: ", y.shape)
+print("Forward shape: ", y.shape)
 # print("Forward result: ", y)
 
 delta = np.ones(y.shape)
 
 dx = model.backward(delta)
 
-# print("Backward shape: ", dx.shape)
+print("Backward shape: ", dx.shape)
 # print("Backward result: ", dx)

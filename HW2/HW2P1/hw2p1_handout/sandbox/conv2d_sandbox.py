@@ -55,7 +55,7 @@ y = conv_layer.forward(x)
 
 #TODO: Uncomment and/or add print statements as you need them.
 
-# print("output shape: ", y.shape)
+print("output shape: ", y.shape)
 # print("output: ", y)
 
 delta = np.random.randn(*y.shape)
@@ -65,5 +65,5 @@ delta = np.random.randn(*y.shape)
 
 dx = conv_layer.backward(delta)
 
-# print("dx shape: ", dx.shape)
+print("dx shape: ", dx.shape)
 # print("dx: ", dx)
