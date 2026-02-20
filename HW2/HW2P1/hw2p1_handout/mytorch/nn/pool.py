@@ -56,7 +56,7 @@ class MaxPool2d_stride1():
         output_width, output_height = dLdZ.shape[2], dLdZ.shape[3]
 
         # Gradient
-        dLdA = np.zeros(self.A)
+        dLdA = np.zeros(self.A.shape)
 
         # Backpropagate gradient only to max positions
         for a in range(batch_size):
@@ -120,8 +120,8 @@ class MeanPool2d_stride1():
         # Gradient distribution
         for a in range(batch_size):
             for b in range(input_channels):
-                for c in range(input_width):
-                    for d in range(input_height):
+                for c in range(output_width):
+                    for d in range(output_height):
                         gradients = dLdZ[a, b, c, d] / (kernel * kernel)
                         dLdA[a, b, c:c+kernel, d:d+kernel] += gradients
 
@@ -165,7 +165,7 @@ class MaxPool2d():
         # Backprop through stride-1 max pool
         dLdA = self.maxpool2d_stride1.backward(dLdZ_stride1)
 
-        raise dLdA
+        return dLdA
 
 
 class MeanPool2d():

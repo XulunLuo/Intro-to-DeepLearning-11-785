@@ -8,7 +8,7 @@ class Linear:
         Read the writeup (Hint: Linear Layer Section Table) to identify the right shapes for `W` and `b`.
         """
         self.debug = debug
-        self.W = np.zeros((in_features, out_features))  # TODO
+        self.W = np.zeros((out_features, in_features))  # TODO
         self.b = np.zeros(out_features)  # TODO
 
     def forward(self, A):
@@ -21,7 +21,7 @@ class Linear:
         self.A = A  # TODO
         self.N = A.shape[0]  # TODO - store the batch size parameter of the input A
 
-        Z = A @ self.W + self.b  # TODO
+        Z = A @ self.W.T + self.b  # TODO
         return Z  # TODO - What should be the return value?
 
     def backward(self, dLdZ):
@@ -31,8 +31,8 @@ class Linear:
 
         Read the writeup (Hint: Linear Layer Section) for implementation details below variables.
         """
-        dLdA = dLdZ @ self.W.T  # TODO
-        self.dLdW = self.A.T @ dLdZ  # TODO
+        dLdA = dLdZ @ self.W  # TODO
+        self.dLdW = dLdZ.T @ self.A  # TODO
         self.dLdb = np.sum(dLdZ, axis=0)  # TODO
 
         if self.debug:

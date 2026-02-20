@@ -11,8 +11,8 @@ class ConvTranspose1d():
 
         # Initialize Conv1d stride 1 and upsample1d isntance
         # TODO
-        self.upsample1d = None  # TODO
-        self.conv1d_stride1 = None  # TODO
+        self.upsample1d = Upsample1d(upsampling_factor)  # TODO
+        self.conv1d_stride1 = Conv1d_stride1(in_channels, out_channels, kernel_size, weight_init_fn, bias_init_fn)   # TODO
 
     def forward(self, A):
         """

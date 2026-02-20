@@ -14,8 +14,9 @@ class Upsample1d():
         """
 
         # Get the input dimension and the output width 
+        self.A = A
         batch_size, in_channels, input_width = A.shape
-        output_width = input_width * self.upsampling_factor
+        output_width = (input_width - 1) * self.upsampling_factor + 1
 
         # Output array
         Z = np.zeros((batch_size, in_channels, output_width))
@@ -48,8 +49,9 @@ class Downsample1d():
         Return:
             Z (np.array): (batch_size, in_channels, output_width)
         """
-        Z = A[:, :, ::self.downsampling_factor]
-        return Z
+        self.A_shape = A.shape
+
+        return A[:, :, ::self.downsampling_factor]
 
     def backward(self, dLdZ):
         """
@@ -58,11 +60,10 @@ class Downsample1d():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_width)
         """
-        batch_size, in_channels, output_width = dLdZ.shape
-        input_width = output_width * self.downsampling_factor
+
 
         # Create zeros for the input arrays
-        dLdA = np.zeros((batch_size, in_channels, input_width))  # TODO
+        dLdA = np.zeros(self.A_shape)  # TODO
 
         # Place the gradients back
         dLdA[:, :, ::self.downsampling_factor] = dLdZ
@@ -82,9 +83,10 @@ class Upsample2d():
             Z (np.array): (batch_size, in_channels, output_height, output_width)
         """
         # Get the input dimension and the output width
+        self.A = A
         batch_size, in_channels, input_height, input_width = A.shape
-        output_width = input_width * self.upsampling_factor
-        output_height = input_height * self.upsampling_factor
+        output_height = (input_height - 1) * self.upsampling_factor + 1
+        output_width  = (input_width  - 1) * self.upsampling_factor + 1
 
         # Create zeros for the output arrays
         Z = np.zeros((batch_size, in_channels, output_height, output_width))
@@ -118,6 +120,7 @@ class Downsample2d():
         Return:
             Z (np.array): (batch_size, in_channels, output_height, output_width)
         """
+        self.A_shape = A.shape
 
         Z = A[:, :, ::self.downsampling_factor, ::self.downsampling_factor]
         return Z
@@ -129,11 +132,7 @@ class Downsample2d():
         Return:
             dLdA (np.array): (batch_size, in_channels, input_height, input_width)
         """
-        batch_size, in_channels, output_height, output_width = dLdZ.shape
-        input_height = output_height * self.downsampling_factor
-        input_width = output_width * self.downsampling_factor
-
-        dLdA = np.zeros((batch_size, in_channels, input_height, input_width))
+        dLdA = np.zeros(self.A_shape)
         dLdA[:, :, ::self.downsampling_factor, ::self.downsampling_factor] = dLdZ
 
         return dLdA

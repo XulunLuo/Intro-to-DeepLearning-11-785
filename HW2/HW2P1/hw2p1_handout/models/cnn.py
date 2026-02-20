@@ -77,7 +77,7 @@ class CNN(object):
         # Linear layer
         self.linear_layer = Linear(current_channels * current_width, num_linear_neurons)
         self.linear_layer.W = linear_weight_init_fn(num_linear_neurons, current_channels * current_width)
-        self.linear_layer.b = bias_init_fn(num_linear_neurons).reshape(-1, 1)
+        self.linear_layer.b = bias_init_fn(num_linear_neurons)
 
     def forward(self, A):
         """
